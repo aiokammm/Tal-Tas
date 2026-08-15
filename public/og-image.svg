@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <style>
+      @font-face {
+        font-family: "Literata";
+        
+      }
+      .brand {
+        font-family: "Literata", Georgia, serif;
+        font-size: 30px;
+        letter-spacing: 6px;
+        fill: #6E6A63;
+      }
+      .head {
+        font-family: "Literata", Georgia, serif;
+        font-size: 72px;
+        fill: #23272B;
+      }
+      .sub {
+        font-family: "Literata", Georgia, serif;
+        font-size: 34px;
+        fill: #6E6A63;
+      }
+    </style>
+  </defs>
+
+  <rect width="1200" height="630" fill="#F7F4EF"/>
+
+  <!-- Тот же знак, что и на вкладке браузера: ива и камень -->
+  <path d="M92 128 C92 92, 105 70, 123 56" fill="none" stroke="#687A57" stroke-width="9" stroke-linecap="round"/>
+  <rect x="137" y="62" width="9" height="66" rx="3" fill="#23272B"/>
+
+  <text class="brand" x="92" y="210">TAL &amp; TAS</text>
+
+  <text class="head" x="92" y="330">Предпродажная подготовка</text>
+  <text class="head" x="92" y="420">квартир в Алматы</text>
+
+  <text class="sub" x="92" y="510">Продаётся на 24 дня быстрее и на 6% дороже</text>
+
+  <!-- Тонкая линия внизу вместо рамки: тот же приём, что и на сайте -->
+  <rect x="92" y="556" width="1016" height="1" fill="#E3DED5"/>
+  <text class="sub" x="92" y="600" style="font-size:26px">Алматы · Медеу · Бостандық · Алмалы · Наурызбай</text>
+</svg>

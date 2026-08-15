@@ -1,0 +1,125 @@
+---
+import { site } from "../data/site";
+import { getContent, localize, type Lang } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getContent(lang);
+const year = new Date().getFullYear();
+---
+
+<footer class="ftr">
+  <div class="container">
+    <div class="ftr__top">
+      <div>
+        <p class="ftr__logo">{site.name}</p>
+        <p class="ftr__areas">{site.areas}</p>
+      </div>
+
+      <nav class="ftr__nav" aria-label={t.labels.footerNav}>
+        <ul class="ftr__list">
+          {
+            t.nav.map((item) => (
+              <li>
+                <a class="ftr__link" href={localize(item.href, lang)}>
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <address class="ftr__contact">
+        <!-- Плюс в номере оставляем: без него телефон за границей
+             наберёт номер неправильно. Убираем только скобки и пробелы. -->
+        <a class="ftr__link" href={`tel:${site.phone.replace(/[^0-9+]/g, "")}`}>
+          {site.phone}
+        </a>
+        <a class="ftr__link" href={`mailto:${site.email}`}>{site.email}</a>
+      </address>
+    </div>
+
+    <p class="ftr__note">{t.footer.demoNotice}</p>
+
+    <p class="ftr__legal">© {year} {site.fullName}</p>
+  </div>
+</footer>
+
+<style>
+  .ftr {
+    border-top: 1px solid var(--line);
+    padding-block: var(--space-16) var(--space-8);
+    font-size: var(--text-sm);
+  }
+
+  .ftr__top {
+    display: grid;
+    gap: var(--space-8);
+    padding-bottom: var(--space-12);
+  }
+
+  .ftr__logo {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .ftr__areas,
+  .ftr__legal {
+    color: var(--stone);
+    font-size: var(--text-xs);
+  }
+
+  .ftr__areas {
+    margin-top: var(--space-2);
+  }
+
+  .ftr__list {
+    list-style: none;
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .ftr__contact {
+    display: grid;
+    gap: var(--space-3);
+    font-style: normal;
+  }
+
+  .ftr__link {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .ftr__link:hover {
+    text-decoration: underline;
+  }
+
+  /* Честная пометка, что компания выдуманная.
+     На демо это обязательно: выдавать придуманные отзывы и цифры
+     за настоящие — обман, а в США ещё и штраф от FTC. */
+  .ftr__note {
+    max-width: var(--text-width);
+    padding: var(--space-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--stone);
+    font-size: var(--text-xs);
+    line-height: 1.5;
+  }
+
+  .ftr__legal {
+    margin-top: var(--space-8);
+  }
+
+  @media (min-width: 768px) {
+    .ftr__top {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+  }
+</style>

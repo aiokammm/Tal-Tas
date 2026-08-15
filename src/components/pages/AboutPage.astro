@@ -1,0 +1,189 @@
+---
+import PageHeader from "../PageHeader.astro";
+import FinalCta from "../FinalCta.astro";
+import Photo from "../Photo.astro";
+import { getContent, getPages, type Lang } from "../../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getPages(lang);
+const common = getContent(lang);
+---
+
+<PageHeader title={t.about.title} />
+
+<!-- ===================== История основателя =====================
+     Страница «О нас» — второе по посещаемости место после главной.
+     Люди хотят понять, кому платят. Поэтому здесь личный рассказ
+     от первого лица с конкретными годами и цифрами, а не
+     «мы команда профессионалов, наша миссия». -->
+<section class="section">
+  <div class="container story">
+    <div class="story__text prose">
+      {t.about.story.map((paragraph) => <p class="story__p">{paragraph}</p>)}
+      <p class="story__sign">{t.about.signature}</p>
+    </div>
+
+    <div class="story__photo">
+      <Photo
+        src="about/founder.webp"
+        alt={t.about.signature}
+        ratio="3/4"
+        placeholder={`${common.labels.photo}: ${t.about.signature}, 3:4`}
+      />
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Принципы ===================== -->
+<section class="section principles">
+  <div class="container">
+    <h2 class="principles__title">{t.about.principlesTitle}</h2>
+
+    <ul class="principles__list">
+      {
+        t.about.principles.map((item) => (
+          <li class="principles__item">
+            <h3 class="principles__name">{item.name}</h3>
+            <p class="principles__body">{item.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== Команда ===================== -->
+<section class="section">
+  <div class="container">
+    <h2 class="team__title">{t.about.teamTitle}</h2>
+
+    <ul class="team">
+      {
+        t.about.team.map((person) => (
+          <li class="team__item">
+            <Photo
+              src={`team/${person.slug}.webp`}
+              alt={`${person.name} — ${person.role}`}
+              ratio="1/1"
+              placeholder={`${common.labels.photo}: ${person.name}, 1:1`}
+            />
+            <p class="team__name">{person.name}</p>
+            <p class="team__role">{person.role}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<FinalCta lang={lang} page="about" />
+
+<style>
+  /* --- История --- */
+  .story {
+    display: grid;
+    gap: var(--space-12);
+  }
+
+  .story__p + .story__p {
+    margin-top: var(--space-6);
+  }
+
+  .story__sign {
+    margin-top: var(--space-8);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+  }
+
+  @media (min-width: 900px) {
+    .story {
+      grid-template-columns: 1.6fr 1fr;
+      gap: var(--space-16);
+      align-items: start;
+    }
+
+    /* Фотография идёт первой в разметке? Нет — текст важнее,
+       поэтому в коде он выше, а справа его ставит только сетка. */
+    .story__photo {
+      position: sticky;
+      top: var(--space-8);
+    }
+  }
+
+  /* --- Принципы --- */
+  .principles {
+    border-block: 1px solid var(--line);
+  }
+
+  .principles__title {
+    margin-bottom: var(--space-12);
+  }
+
+  .principles__list {
+    list-style: none;
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .principles__item {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+  }
+
+  .principles__name {
+    margin-bottom: var(--space-3);
+  }
+
+  .principles__body {
+    font-size: var(--text-sm);
+    color: var(--stone);
+  }
+
+  @media (min-width: 768px) {
+    .principles__list {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-12) var(--space-8);
+    }
+  }
+
+  /* --- Команда --- */
+  .team__title {
+    margin-bottom: var(--space-12);
+  }
+
+  .team {
+    list-style: none;
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .team__name {
+    margin-top: var(--space-4);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+  }
+
+  .team__role {
+    margin-top: var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--stone);
+  }
+
+  @media (min-width: 640px) {
+    .team {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .team {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>

@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import AboutPage from "../components/pages/AboutPage.astro";
+import { getPages } from "../i18n/utils";
+
+const lang = "ru" as const;
+const t = getPages(lang);
+---
+
+<BaseLayout lang={lang} title={t.about.metaTitle} description={t.about.intro}>
+  <AboutPage lang={lang} />
+</BaseLayout>

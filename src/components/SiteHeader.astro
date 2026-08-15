@@ -1,0 +1,229 @@
+---
+import { site } from "../data/site";
+import { getContent, localize, languageLinks, type Lang } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getContent(lang);
+const langs = languageLinks(Astro.url.pathname, lang);
+---
+
+<header class="hdr">
+  <div class="container hdr__inner">
+    <a class="hdr__logo" href={localize("/", lang)}>{site.name}</a>
+
+    <button
+      class="hdr__toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="site-nav"
+    >
+      <span class="visually-hidden">{t.labels.menu}</span>
+      <span class="hdr__bars" aria-hidden="true"></span>
+    </button>
+
+    <nav class="hdr__nav" id="site-nav" aria-label={t.labels.mainNav}>
+      <ul class="hdr__list">
+        {
+          t.nav.map((item) => (
+            <li>
+              <a class="hdr__link" href={localize(item.href, lang)}>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <!-- Переключатель языка. Названия языков всегда пишутся на самом
+           этом языке — «Русский», а не «Russian». Человек, попавший
+           на чужую версию, должен узнать свой язык в списке. -->
+      <ul class="hdr__langs" aria-label={t.labels.langSwitch}>
+        {
+          langs.map((item) => (
+            <li>
+              <a
+                class="hdr__lang"
+                href={item.href}
+                hreflang={item.htmlLang}
+                lang={item.htmlLang}
+                aria-current={item.isCurrent ? "true" : undefined}
+              >
+                {item.short}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <a class="btn btn--primary hdr__cta" href={localize("/quote", lang)}>
+        {t.buttons.quote}
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .hdr {
+    border-bottom: 1px solid var(--line);
+    background-color: var(--alabaster);
+  }
+
+  .hdr__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    padding-block: var(--space-4);
+  }
+
+  .hdr__logo {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* --- Кнопка-гамбургер. Видна только на телефоне --- */
+  .hdr__toggle {
+    display: grid;
+    place-items: center;
+    width: 44px; /* минимальный размер, в который уверенно попадает палец */
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .hdr__bars,
+  .hdr__bars::before,
+  .hdr__bars::after {
+    display: block;
+    width: 18px;
+    height: 1px;
+    background-color: var(--ink);
+  }
+
+  .hdr__bars::before,
+  .hdr__bars::after {
+    content: "";
+    position: relative;
+  }
+
+  .hdr__bars::before {
+    top: -6px;
+  }
+  .hdr__bars::after {
+    top: 5px;
+  }
+
+  /* --- Меню --- */
+  .hdr__nav {
+    display: none;
+    width: 100%;
+    padding-bottom: var(--space-4);
+  }
+
+  .hdr__nav[data-open="true"] {
+    display: block;
+  }
+
+  .hdr__list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .hdr__link {
+    color: var(--ink);
+    text-decoration: none;
+    font-size: var(--text-sm);
+  }
+
+  .hdr__link:hover {
+    text-decoration: underline;
+  }
+
+  /* --- Переключатель языка --- */
+  .hdr__langs {
+    list-style: none;
+    display: flex;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+  }
+
+  .hdr__lang {
+    color: var(--stone);
+    text-decoration: none;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+  }
+
+  .hdr__lang:hover {
+    color: var(--ink);
+  }
+
+  /* Текущий язык подсвечен рамкой, а не только цветом:
+     людям, не различающим цвета, цвет ничего не скажет. */
+  .hdr__lang[aria-current="true"] {
+    color: var(--ink);
+    border-color: var(--line);
+  }
+
+  .hdr__cta {
+    width: 100%;
+  }
+
+  /* --- От планшета и шире --- */
+  @media (min-width: 900px) {
+    .hdr__toggle {
+      display: none;
+    }
+
+    .hdr__nav {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+      width: auto;
+      padding-bottom: 0;
+    }
+
+    .hdr__list {
+      flex-direction: row;
+      gap: var(--space-6);
+      margin-bottom: 0;
+    }
+
+    .hdr__langs {
+      margin-bottom: 0;
+    }
+
+    .hdr__cta {
+      width: auto;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>(".hdr__toggle");
+  const menu = document.querySelector<HTMLElement>(".hdr__nav");
+
+  toggle?.addEventListener("click", () => {
+    const isOpen = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", String(!isOpen));
+    if (menu) menu.dataset.open = String(!isOpen);
+  });
+</script>

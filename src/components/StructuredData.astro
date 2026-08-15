@@ -1,0 +1,84 @@
+---
+/**
+ * Данные о компании в машинном виде — для поисковиков.
+ *
+ * На странице этого не видно. Это скрытая табличка, из которой Google
+ * понимает: это местный бизнес, вот название, вот телефон, вот часы работы,
+ * вот районы. Благодаря ей в поиске может появиться карточка компании
+ * с телефоном и временем работы, а не просто синяя ссылка.
+ *
+ * Формат называется schema.org и одинаков для всех поисковиков мира.
+ *
+ * На странице услуг сюда же добавляются вопросы и ответы: Google умеет
+ * показывать их прямо в результатах поиска, раскрывающимся списком.
+ */
+import { site } from "../data/site";
+import { getContent, getPages, languages, type Lang } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+  /** Показать ли разметку с вопросами и ответами (нужна только в услугах) */
+  withFaq?: boolean;
+}
+
+const { lang, withFaq = false } = Astro.props;
+const t = getContent(lang);
+const pages = getPages(lang);
+const origin = Astro.site?.origin ?? "";
+
+const business = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: site.fullName,
+  description: t.meta.description,
+  url: origin,
+  telephone: site.phone,
+  email: site.email,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Алматы",
+    addressCountry: "KZ",
+  },
+  areaServed: site.areas.split(" · ").map((area) => ({
+    "@type": "City",
+    name: area,
+  })),
+  openingHoursSpecification: {
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ],
+    opens: "09:00",
+    closes: "19:00",
+  },
+  priceRange: "₸₸",
+  inLanguage: Object.values(languages).map((item) => item.htmlLang),
+  makesOffer: pages.services.items.map((item) => ({
+    "@type": "Offer",
+    name: item.name,
+    description: item.description,
+  })),
+};
+
+const faq = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: pages.services.faq.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
+---
+
+<script
+  type="application/ld+json"
+  set:html={JSON.stringify(business)}
+/>
+
+{withFaq && <script type="application/ld+json" set:html={JSON.stringify(faq)} />}

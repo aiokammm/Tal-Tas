@@ -1,0 +1,64 @@
+---
+/**
+ * Заглушка вместо фотографии.
+ *
+ * Пока настоящих фотографий нет, на их местах стоят серые прямоугольники
+ * с подписью. Так видно раскладку страницы, и при этом сразу известно,
+ * какого размера кадр сюда потом понадобится.
+ *
+ * Когда появятся настоящие фото — этот компонент заменяется на <Image />,
+ * а вся остальная вёрстка остаётся нетронутой.
+ */
+interface Props {
+  label: string;
+  /** Соотношение сторон, например "4/3" или "3/4". */
+  ratio?: string;
+  /** "dark" — для кадров «до», "light" — для кадров «после». */
+  tone?: "dark" | "light";
+}
+
+const { label, ratio = "4/3", tone = "light" } = Astro.props;
+---
+
+<div class:list={["ph", `ph--${tone}`]} style={`--ratio: ${ratio}`}>
+  <span class="ph__label">{label}</span>
+</div>
+
+<style>
+  .ph {
+    aspect-ratio: var(--ratio);
+    display: grid;
+    padding: var(--space-4);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Подпись «до» прижата к левому верхнему углу, «после» — к правому.
+     По центру их ставить нельзя: в бегунке два кадра лежат друг на друге,
+     и подписи налезали бы одна на другую ровно посередине. */
+  .ph--dark {
+    place-items: start start;
+  }
+
+  .ph--light {
+    place-items: start end;
+    text-align: right;
+  }
+
+  /* Кадр «после»: светлый, как обставленная комната при дневном свете */
+  .ph--light {
+    background-color: #e8e2d8;
+    color: #8f887c;
+  }
+
+  /* Кадр «до»: темнее и холоднее, как пустая комната */
+  .ph--dark {
+    background-color: #b9b4ac;
+    color: #4d4941;
+  }
+
+  .ph__label {
+    max-width: 22ch;
+  }
+</style>

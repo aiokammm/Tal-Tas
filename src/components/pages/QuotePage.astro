@@ -1,0 +1,442 @@
+---
+import PageHeader from "../PageHeader.astro";
+import { getPages, type Lang } from "../../i18n/utils";
+import { site } from "../../data/site";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getPages(lang);
+const f = t.quote.form;
+---
+
+<PageHeader title={t.quote.title} intro={t.quote.intro} />
+
+<section class="section">
+  <div class="container contact">
+    <!-- ===================== Форма =====================
+         novalidate отключает встроенные сообщения браузера. Они всегда
+         на языке браузера, а не сайта: русский посетитель с английской
+         системой увидел бы «Please fill out this field». Поэтому
+         проверяем сами и пишем свои тексты. -->
+    <form class="form" id="quote-form" novalidate>
+      <fieldset class="form__set">
+        <legend class="visually-hidden">{f.legend}</legend>
+
+        <div class="field">
+          <label class="field__label" for="name">{f.name}</label>
+          <input class="field__input" id="name" name="name" type="text" required
+            autocomplete="name" />
+          <p class="field__error" id="name-error" hidden></p>
+        </div>
+
+        <!-- Телефон обязателен, а почта нет — и это не мелочь.
+             В Казахстане почту многие открывают раз в неделю, а телефон
+             всегда под рукой. Обязательная почта здесь потеряла бы заявки. -->
+        <div class="field">
+          <label class="field__label" for="phone">{f.phone}</label>
+          <input class="field__input" id="phone" name="phone" type="tel" required
+            autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__"
+            aria-describedby="phone-hint" />
+          <p class="field__hint" id="phone-hint">{f.phoneHint}</p>
+          <p class="field__error" id="phone-error" hidden></p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="email">
+            {f.email} <span class="field__opt">({f.optional})</span>
+          </label>
+          <input class="field__input" id="email" name="email" type="email"
+            autocomplete="email" aria-describedby="email-hint" />
+          <p class="field__hint" id="email-hint">{f.emailHint}</p>
+          <p class="field__error" id="email-error" hidden></p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="address">{f.address}</label>
+          <input class="field__input" id="address" name="address" type="text" required />
+          <p class="field__error" id="address-error" hidden></p>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="area">
+            {f.area} <span class="field__opt">({f.optional})</span>
+          </label>
+          <input class="field__input field__input--short" id="area" name="area"
+            type="number" min="1" max="1000" inputmode="numeric"
+            aria-describedby="area-hint" />
+          <p class="field__hint" id="area-hint">{f.areaHint}</p>
+        </div>
+
+        <!-- Переключатель из двух вариантов: radio, а не выпадающий список.
+             Когда вариантов два-три, показать их сразу быстрее, чем
+             заставлять человека раскрывать список. -->
+        <fieldset class="field radios">
+          <legend class="field__label">{f.state}</legend>
+          <div class="radios__row">
+            <label class="radio">
+              <input type="radio" name="state" value="vacant" required />
+              <span>{f.stateVacant}</span>
+            </label>
+            <label class="radio">
+              <input type="radio" name="state" value="occupied" required />
+              <span>{f.stateOccupied}</span>
+            </label>
+          </div>
+          <p class="field__error" id="state-error" hidden></p>
+        </fieldset>
+
+        <div class="field">
+          <label class="field__label" for="timing">{f.timing}</label>
+          <select class="field__input" id="timing" name="timing">
+            {f.timingOptions.map((option) => <option value={option}>{option}</option>)}
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="message">
+            {f.message} <span class="field__opt">({f.optional})</span>
+          </label>
+          <textarea class="field__input" id="message" name="message" rows="4"></textarea>
+        </div>
+
+        <button class="btn btn--primary form__submit" type="submit">{f.submit}</button>
+        <p class="form__note">{f.note}</p>
+        <p class="form__demo">{f.demoNotice}</p>
+      </fieldset>
+    </form>
+
+    <!-- Экран «спасибо». Показывается вместо формы после отправки.
+         role="status" — программа для незрячих зачитает его сама,
+         без этого человек не поймёт, что что-то произошло. -->
+    <div class="done" id="quote-done" role="status" hidden>
+      <h2 class="done__title">{f.successTitle}</h2>
+      <p class="done__body">{f.successBody}</p>
+      <p class="done__demo">{f.demoNotice}</p>
+    </div>
+
+    <!-- ===================== Запасной путь: WhatsApp =====================
+         Часть людей форму не заполнит никогда — им проще написать.
+         Терять их глупо, поэтому рядом стоит прямая ссылка в WhatsApp.
+         Она открывает переписку с уже готовым первым сообщением. -->
+    <aside class="wa" id="whatsapp-block">
+      <h2 class="wa__title">{f.whatsappTitle}</h2>
+      <p class="wa__body">{f.whatsappBody}</p>
+      <a
+        class="btn btn--ghost wa__btn"
+        href={`https://wa.me/${site.whatsappDigits}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {f.whatsappButton}
+      </a>
+      <p class="wa__num">{site.whatsapp}</p>
+    </aside>
+
+  </div>
+</section>
+
+<!-- Тексты ошибок задаются на сервере при сборке и кладутся в data-атрибуты,
+     чтобы скрипт мог их прочитать. Иначе пришлось бы дублировать переводы
+     внутри скрипта. -->
+<div
+  id="form-messages"
+  hidden
+  data-required={f.errorRequired}
+  data-email={f.errorEmail}
+  data-phone={f.errorPhone}>
+</div>
+
+<style>
+  .contact {
+    display: grid;
+    gap: var(--space-16);
+    align-items: start;
+  }
+
+  /* --- Поля --- */
+  .form__set {
+    border: 0;
+    display: grid;
+    gap: var(--space-6);
+    max-width: 34rem;
+  }
+
+  .field {
+    display: grid;
+    gap: var(--space-2);
+    border: 0;
+  }
+
+  .field__label {
+    font-size: var(--text-sm);
+  }
+
+  .field__opt {
+    color: var(--stone);
+    font-size: var(--text-xs);
+  }
+
+  .field__input {
+    width: 100%;
+    min-height: 48px;
+    padding: var(--space-3) var(--space-4);
+    background-color: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+  }
+
+  .field__input--short {
+    max-width: 10rem;
+  }
+
+  textarea.field__input {
+    min-height: auto;
+    resize: vertical;
+  }
+
+  .field__input:focus-visible {
+    border-color: var(--ink);
+  }
+
+  /* Поле с ошибкой помечено и рамкой, и текстом. Только красной рамкой
+     помечать нельзя: человек, не различающий цвета, её не увидит. */
+  .field__input[aria-invalid="true"] {
+    border-color: var(--clay);
+    border-width: 2px;
+  }
+
+  .field__hint {
+    font-size: var(--text-xs);
+    color: var(--stone);
+  }
+
+  .field__error {
+    font-size: var(--text-xs);
+    color: var(--clay);
+  }
+
+  .field__error[hidden] {
+    display: none;
+  }
+
+  /* --- Переключатели --- */
+  .radios__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-top: var(--space-1);
+  }
+
+  .radio {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    font-size: var(--text-sm);
+    cursor: pointer;
+  }
+
+  /* --- Кнопка и примечания --- */
+  .form__submit {
+    justify-self: start;
+    margin-top: var(--space-2);
+  }
+
+  /* Снимает главный страх «сейчас меня завалят звонками» —
+     из-за него формы чаще всего и не отправляют. */
+  .form__note {
+    font-size: var(--text-xs);
+    color: var(--stone);
+  }
+
+  .form__demo,
+  .done__demo {
+    padding: var(--space-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: var(--text-xs);
+    color: var(--stone);
+    line-height: 1.5;
+  }
+
+  /* --- Экран «спасибо» --- */
+  .done {
+    max-width: 34rem;
+    padding: var(--space-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background-color: var(--white);
+  }
+
+  .done[hidden] {
+    display: none;
+  }
+
+  .done__body {
+    margin-block: var(--space-4) var(--space-6);
+    color: var(--stone);
+  }
+
+  /* --- Блок WhatsApp --- */
+  .wa {
+    padding: var(--space-6);
+    border: 1px solid var(--willow);
+    border-radius: var(--radius);
+    background-color: var(--white);
+
+    /* На телефоне поднимаем блок НАД формой.
+       Иначе человек, который не хочет заполнять восемь полей, должен
+       пролистать все восемь, чтобы узнать, что можно просто написать.
+       До этого места он не доберётся — он закроет страницу. */
+    order: -1;
+  }
+
+  .wa__title {
+    font-size: var(--text-lg);
+  }
+
+  .wa__body {
+    margin-top: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--stone);
+  }
+
+  .wa__btn {
+    margin-top: var(--space-6);
+    width: 100%;
+    border-color: var(--willow);
+  }
+
+  .wa__btn:hover {
+    border-color: var(--ink);
+  }
+
+  .wa__num {
+    margin-top: var(--space-3);
+    text-align: center;
+    font-size: var(--text-xs);
+    color: var(--stone);
+  }
+
+  @media (min-width: 900px) {
+    .contact {
+      grid-template-columns: 1.6fr 1fr;
+      gap: var(--space-16);
+      align-items: start;
+    }
+
+    .form,
+    .done {
+      grid-column: 1;
+    }
+
+    .wa {
+      grid-column: 2;
+      /* На компьютере блок WhatsApp стоит справа от формы,
+         поэтому поднимать его наверх не нужно. */
+      order: 0;
+      position: sticky;
+      top: var(--space-8);
+    }
+  }
+</style>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>("#quote-form");
+  const done = document.querySelector<HTMLElement>("#quote-done");
+  const messages = document.querySelector<HTMLElement>("#form-messages");
+
+  if (form && done && messages) {
+    const textRequired = messages.dataset.required ?? "";
+    const textEmail = messages.dataset.email ?? "";
+    const textPhone = messages.dataset.phone ?? "";
+
+    /** Показывает или убирает ошибку у одного поля. */
+    const setError = (field: HTMLElement, errorId: string, text: string | null) => {
+      const box = document.querySelector<HTMLElement>(`#${errorId}`);
+      if (!box) return;
+
+      if (text) {
+        box.textContent = text;
+        box.hidden = false;
+        field.setAttribute("aria-invalid", "true");
+        field.setAttribute("aria-describedby", errorId);
+      } else {
+        box.hidden = true;
+        field.removeAttribute("aria-invalid");
+        field.removeAttribute("aria-describedby");
+      }
+    };
+
+    const checks: { id: string; errorId: string; check: (v: string) => string | null }[] = [
+      { id: "name", errorId: "name-error", check: (v) => (v.trim() ? null : textRequired) },
+      {
+        id: "phone",
+        errorId: "phone-error",
+        check: (v) => {
+          if (!v.trim()) return textRequired;
+          // Считаем только цифры и разрешаем всё остальное: люди пишут
+          // номер как привыкли — со скобками, через восьмёрку, с пробелами.
+          // Строгая проверка отсеяла бы нормальные номера, а это потеря заявки.
+          const digits = v.replace(/\D/g, "");
+          return digits.length >= 10 && digits.length <= 15 ? null : textPhone;
+        },
+      },
+      {
+        id: "email",
+        errorId: "email-error",
+        // Почта необязательна: пустое поле — не ошибка.
+        // Но если человек что-то ввёл, проверим, похоже ли это на адрес.
+        check: (v) => {
+          if (!v.trim()) return null;
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? null : textEmail;
+        },
+      },
+      { id: "address", errorId: "address-error", check: (v) => (v.trim() ? null : textRequired) },
+    ];
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      let firstBad: HTMLElement | null = null;
+
+      for (const item of checks) {
+        const field = document.querySelector<HTMLInputElement>(`#${item.id}`);
+        if (!field) continue;
+
+        const problem = item.check(field.value);
+        setError(field, item.errorId, problem);
+        if (problem && !firstBad) firstBad = field;
+      }
+
+      // Переключатели проверяются отдельно: у них одно имя на два поля
+      const state = form.querySelector<HTMLInputElement>('input[name="state"]:checked');
+      const stateBox = document.querySelector<HTMLElement>("#state-error");
+      if (stateBox) {
+        stateBox.textContent = state ? "" : textRequired;
+        stateBox.hidden = Boolean(state);
+      }
+      if (!state && !firstBad) {
+        firstBad = form.querySelector<HTMLInputElement>('input[name="state"]');
+      }
+
+      // Курсор прыгает на первое незаполненное поле. Без этого человек
+      // на длинной форме не понимает, где именно ошибся.
+      if (firstBad) {
+        firstBad.focus();
+        firstBad.scrollIntoView({ block: "center", behavior: "smooth" });
+        return;
+      }
+
+      // Демонстрационный сайт: письмо никуда не уходит, просто
+      // показываем экран «спасибо» вместо формы.
+      form.hidden = true;
+      done.hidden = false;
+      done.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+  }
+</script>

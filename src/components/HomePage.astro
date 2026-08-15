@@ -1,0 +1,459 @@
+---
+/**
+ * Главная страница. Одна для всех языков.
+ *
+ * Здесь только раскладка: какой блок за каким и как выглядит.
+ * Ни одного написанного текста — всё берётся из src/data/en.ts или ru.ts
+ * по выбранному языку. Поэтому русская и английская версии физически
+ * не могут разъехаться по вёрстке: страница одна.
+ */
+import BeforeAfter from "./BeforeAfter.astro";
+import Photo from "./Photo.astro";
+import { getContent, localize, type Lang } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getContent(lang);
+---
+
+<!-- ===================== Первый экран ===================== -->
+<section class="section hero">
+  <div class="container hero__grid">
+    <div class="hero__text">
+      <h1>{t.hero.heading}</h1>
+      <p class="lead hero__sub">{t.hero.subheading}</p>
+
+      <div class="hero__actions">
+        <a class="btn btn--primary" href={localize("/quote", lang)}>
+          {t.buttons.quote}
+        </a>
+        <a class="btn btn--ghost" href={localize("/work", lang)}>
+          {t.buttons.work}
+        </a>
+      </div>
+    </div>
+
+    <div class="hero__media">
+      <BeforeAfter
+        beforeLabel={t.labels.before}
+        afterLabel={t.labels.after}
+        hint={t.labels.sliderHint}
+        caption={`${t.work.items[0].title} — ${t.work.items[0].type}`}
+      >
+        <Photo
+          slot="before"
+          src={`work/${t.work.items[0].slug}-before.webp`}
+          alt={`${t.labels.photoBefore}: ${t.work.items[0].room}, ${t.work.items[0].title}`}
+          placeholder={`${t.labels.photoBefore}: ${t.work.items[0].room}, 3:2`}
+          tone="dark"
+          eager
+        />
+        <Photo
+          slot="after"
+          src={`work/${t.work.items[0].slug}-after.webp`}
+          alt={`${t.labels.photoAfter}: ${t.work.items[0].room}, ${t.work.items[0].title}`}
+          placeholder={`${t.labels.photoAfter}: ${t.work.items[0].room}, 3:2`}
+          eager
+        />
+      </BeforeAfter>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Проблема ===================== -->
+<section class="section problem">
+  <div class="container prose">
+    <h2>{t.problem.heading}</h2>
+    {t.problem.body.map((paragraph) => <p class="problem__p">{paragraph}</p>)}
+  </div>
+</section>
+
+<!-- ===================== Цифры ===================== -->
+<section class="section stats">
+  <div class="container">
+    <ul class="stats__grid">
+      {
+        t.stats.map((stat) => (
+          <li class="stats__item">
+            <p class="stats__value">
+              {stat.value}
+              <span class="stats__unit">{stat.unit}</span>
+            </p>
+            <p class="stats__label">{stat.label}</p>
+            {stat.source && <p class="stats__source">{stat.source}</p>}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== Услуги ===================== -->
+<section class="section">
+  <div class="container">
+    <p class="eyebrow">{t.services.eyebrow}</p>
+    <h2 class="section__title">{t.services.title}</h2>
+
+    <ul class="cards">
+      {
+        t.services.items.map((service) => (
+          <li class="card">
+            <h3>{service.name}</h3>
+            <p class="card__price">{service.price}</p>
+            <p class="card__body">{service.summary}</p>
+            <a class="card__link" href={localize("/services", lang)}>
+              {t.buttons.learnMore} <span aria-hidden="true">→</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== Работы ===================== -->
+<section class="section">
+  <div class="container">
+    <p class="eyebrow">{t.work.eyebrow}</p>
+    <h2 class="section__title">{t.work.title}</h2>
+
+    <ul class="work">
+      {
+        t.work.items.map((project) => (
+          <li class="work__item">
+            <BeforeAfter
+              beforeLabel={t.labels.before}
+              afterLabel={t.labels.after}
+              hint={t.labels.sliderHint}
+              caption={`${project.title} — ${project.type}`}
+            >
+              <Photo
+                slot="before"
+                src={`work/${project.slug}-before.webp`}
+                alt={`${t.labels.photoBefore}: ${project.room}, ${project.title}`}
+                placeholder={`${t.labels.photoBefore}: ${project.room}, 3:2`}
+                tone="dark"
+              />
+              <Photo
+                slot="after"
+                src={`work/${project.slug}-after.webp`}
+                alt={`${t.labels.photoAfter}: ${project.room}, ${project.title}`}
+                placeholder={`${t.labels.photoAfter}: ${project.room}, 3:2`}
+              />
+            </BeforeAfter>
+          </li>
+        ))
+      }
+    </ul>
+
+    <a class="btn btn--ghost work__more" href={localize("/work", lang)}>
+      {t.buttons.seeAll}
+    </a>
+  </div>
+</section>
+
+<!-- ===================== Как это работает ===================== -->
+<section class="section process">
+  <div class="container">
+    <p class="eyebrow">{t.process.eyebrow}</p>
+    <h2 class="section__title">{t.process.title}</h2>
+
+    <ol class="process__list">
+      {
+        t.process.items.map((item) => (
+          <li class="process__item">
+            <p class="process__num">{item.step}</p>
+            <h3>{item.name}</h3>
+            <p class="process__body">{item.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<!-- ===================== Отзывы ===================== -->
+<section class="section">
+  <div class="container">
+    <p class="eyebrow">{t.testimonials.eyebrow}</p>
+
+    <ul class="quotes">
+      {
+        t.testimonials.items.map((item) => (
+          <li>
+            <figure class="quote">
+              <blockquote class="quote__text">{item.quote}</blockquote>
+              <figcaption class="quote__by">
+                <span class="quote__name">{item.name}</span>
+                <span class="quote__role">{item.role}</span>
+              </figcaption>
+            </figure>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== Последний призыв ===================== -->
+<section class="section cta">
+  <div class="container prose cta__inner">
+    <h2>{t.finalCta.heading}</h2>
+    <p class="cta__body">{t.finalCta.body}</p>
+    <a class="btn btn--primary" href={localize("/quote", lang)}>
+      {t.buttons.consultation}
+    </a>
+  </div>
+</section>
+
+<style>
+  /* --- Общее для разделов --- */
+  .section__title {
+    max-width: 22ch;
+    margin-bottom: var(--space-12);
+  }
+
+  /* --- Первый экран --- */
+  .hero__grid {
+    display: grid;
+    gap: var(--space-12);
+    align-items: center;
+  }
+
+  .hero__sub {
+    margin-top: var(--space-6);
+    max-width: 46ch;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-8);
+  }
+
+  @media (min-width: 900px) {
+    .hero__grid {
+      grid-template-columns: 1fr 1.15fr;
+      gap: var(--space-16);
+    }
+  }
+
+  /* --- Проблема --- */
+  .problem {
+    border-block: 1px solid var(--line);
+  }
+
+  .problem__p {
+    margin-top: var(--space-6);
+  }
+
+  /* --- Цифры --- */
+  .stats__grid {
+    list-style: none;
+    display: grid;
+    gap: var(--space-12);
+  }
+
+  .stats__value {
+    font-family: var(--font-display);
+    font-size: var(--text-4xl);
+    line-height: 1;
+    color: var(--clay); /* единственное яркое пятно на странице */
+  }
+
+  .stats__unit {
+    font-size: var(--text-xl);
+    margin-left: 2px;
+  }
+
+  .stats__label {
+    margin-top: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--stone);
+    max-width: 28ch;
+  }
+
+  /* Чужую статистику подписываем источником. Выдавать её за свою нельзя. */
+  .stats__source {
+    margin-top: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--stone);
+    opacity: 0.75;
+  }
+
+  @media (min-width: 640px) {
+    .stats__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .stats__grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* --- Карточки услуг --- */
+  .cards {
+    list-style: none;
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-8);
+    background-color: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .card__price {
+    margin-top: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--clay);
+  }
+
+  .card__body {
+    margin-top: var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--stone);
+    flex-grow: 1; /* прижимает ссылку к низу, чтобы карточки выровнялись */
+  }
+
+  .card__link {
+    margin-top: var(--space-6);
+    align-self: flex-start;
+    color: var(--ink);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+  }
+
+  .card__link:hover {
+    border-color: var(--ink);
+  }
+
+  @media (min-width: 768px) {
+    .cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* --- Работы --- */
+  .work {
+    list-style: none;
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .work__more {
+    margin-top: var(--space-12);
+  }
+
+  @media (min-width: 900px) {
+    .work {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* --- Как это работает --- */
+  .process {
+    border-block: 1px solid var(--line);
+  }
+
+  .process__list {
+    list-style: none;
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .process__item {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+  }
+
+  .process__num {
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    color: var(--stone);
+    margin-bottom: var(--space-3);
+  }
+
+  .process__body {
+    margin-top: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--stone);
+  }
+
+  @media (min-width: 768px) {
+    .process__list {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-6);
+    }
+  }
+
+  /* --- Отзывы --- */
+  .quotes {
+    list-style: none;
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .quote {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--space-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .quote__text {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    line-height: 1.45;
+    flex-grow: 1;
+  }
+
+  .quote__by {
+    margin-top: var(--space-6);
+    display: grid;
+    gap: 2px;
+  }
+
+  .quote__name {
+    font-size: var(--text-sm);
+  }
+
+  .quote__role {
+    font-size: var(--text-xs);
+    color: var(--stone);
+  }
+
+  @media (min-width: 900px) {
+    .quotes {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* --- Последний призыв --- */
+  .cta {
+    border-top: 1px solid var(--line);
+  }
+
+  .cta__body {
+    margin-top: var(--space-4);
+    color: var(--stone);
+  }
+
+  .cta__inner > .btn {
+    margin-top: var(--space-8);
+  }
+</style>

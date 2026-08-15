@@ -1,0 +1,174 @@
+---
+/**
+ * Страница «Контакты» — только информация о компании.
+ *
+ * Формы здесь нет намеренно. Раньше на этот адрес вели сразу два элемента
+ * шапки: пункт меню «Контакты» и кнопка «Рассчитать стоимость». Два
+ * соседних элемента, ведущих в одно место, — верный способ запутать.
+ *
+ * Теперь намерения разведены:
+ *   «Контакты»            → сюда, за телефоном и часами работы;
+ *   «Рассчитать стоимость» → на /quote, к форме заявки.
+ *
+ * Ссылка на расчёт отсюда всё равно есть — карточкой внизу. Человек,
+ * зашедший за телефоном, но передумавший звонить, не должен искать её сам.
+ */
+import PageHeader from "../PageHeader.astro";
+import { getPages, localize, type Lang } from "../../i18n/utils";
+import { site } from "../../data/site";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getPages(lang).contact;
+
+/* Для ссылок tel: и wa.me номер нужен без скобок, пробелов и дефисов —
+   иначе телефон её не поймёт. Убираем всё, кроме цифр и плюса. */
+const telHref = `tel:${site.phone.replace(/[^0-9+]/g, "")}`;
+---
+
+<PageHeader title={t.title} intro={t.intro} />
+
+<section class="section">
+  <div class="container wrap">
+    <div>
+      <h2 class="info__title">{t.infoTitle}</h2>
+
+      <dl class="info">
+        <div class="info__row">
+          <dt class="info__label">{t.phoneLabel}</dt>
+          <dd class="info__value">
+            <a class="info__link" href={telHref}>{site.phone}</a>
+          </dd>
+        </div>
+
+        <div class="info__row">
+          <dt class="info__label">WhatsApp</dt>
+          <dd class="info__value">
+            <a
+              class="info__link"
+              href={`https://wa.me/${site.whatsappDigits}`}
+              target="_blank"
+              rel="noopener noreferrer">{site.whatsapp}</a
+            >
+          </dd>
+        </div>
+
+        <div class="info__row">
+          <dt class="info__label">{t.emailLabel}</dt>
+          <dd class="info__value">
+            <a class="info__link" href={`mailto:${site.email}`}>{site.email}</a>
+          </dd>
+        </div>
+
+        <div class="info__row">
+          <dt class="info__label">Instagram</dt>
+          <dd class="info__value">{site.instagram}</dd>
+        </div>
+
+        <div class="info__row">
+          <dt class="info__label">{t.hoursLabel}</dt>
+          <dd class="info__value">{t.hoursValue}</dd>
+        </div>
+
+        <div class="info__row">
+          <dt class="info__label">{t.areasLabel}</dt>
+          <dd class="info__value">{site.areas}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- Переход к расчёту. Не дублирует кнопку в шапке, а объясняет,
+         зачем туда идти и сколько это займёт. -->
+    <aside class="quote">
+      <h2 class="quote__title">{t.quoteTitle}</h2>
+      <p class="quote__body">{t.quoteBody}</p>
+      <a class="btn btn--primary quote__btn" href={localize("/quote", lang)}>
+        {t.quoteButton}
+      </a>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .wrap {
+    display: grid;
+    gap: var(--space-12);
+    align-items: start;
+  }
+
+  .info__title {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-8);
+  }
+
+  .info {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .info__row {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+  }
+
+  .info__label {
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--stone);
+    margin-bottom: var(--space-2);
+  }
+
+  .info__value {
+    font-size: var(--text-lg);
+  }
+
+  .info__link {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+  }
+
+  .info__link:hover {
+    border-color: var(--ink);
+  }
+
+  /* --- Карточка перехода к расчёту --- */
+  .quote {
+    padding: var(--space-8);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background-color: var(--white);
+  }
+
+  .quote__title {
+    font-size: var(--text-lg);
+  }
+
+  .quote__body {
+    margin-top: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--stone);
+  }
+
+  .quote__btn {
+    margin-top: var(--space-6);
+    width: 100%;
+  }
+
+  @media (min-width: 900px) {
+    .wrap {
+      grid-template-columns: 1.6fr 1fr;
+      gap: var(--space-16);
+    }
+
+    .quote {
+      position: sticky;
+      top: var(--space-8);
+    }
+  }
+</style>

@@ -1,0 +1,44 @@
+---
+/** Призыв в конце страницы.
+ *
+ *  Текст свой на каждой странице — какой именно, задаёт свойство page.
+ *  Одинаковый блок везде выдавал бы шаблонный сайт.
+ *
+ *  На странице контактов этого блока нет вообще: человек уже дошёл
+ *  до формы, звать его больше некуда.
+ */
+import { getPages, localize, type Lang } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+  page: "services" | "work" | "about";
+}
+
+const { lang, page } = Astro.props;
+const t = getPages(lang).cta[page];
+---
+
+<section class="cta section">
+  <div class="container prose">
+    <h2>{t.heading}</h2>
+    <p class="cta__body">{t.body}</p>
+    <a class="btn btn--primary cta__btn" href={localize("/quote", lang)}>
+      {t.button}
+    </a>
+  </div>
+</section>
+
+<style>
+  .cta {
+    border-top: 1px solid var(--line);
+  }
+
+  .cta__body {
+    margin-top: var(--space-4);
+    color: var(--stone);
+  }
+
+  .cta__btn {
+    margin-top: var(--space-8);
+  }
+</style>

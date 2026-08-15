@@ -1,0 +1,21 @@
+---
+/* Английская главная, адрес «/en/». */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import HomePage from "../../components/HomePage.astro";
+import { getContent } from "../../i18n/utils";
+
+const lang = "en" as const;
+const t = getContent(lang);
+---
+
+<BaseLayout
+  lang={lang}
+  title={t.meta.title}
+  description={t.meta.description}
+  preloadPhotos={[
+    `work/${t.work.items[0].slug}-after.webp`,
+    `work/${t.work.items[0].slug}-before.webp`,
+  ]}
+>
+  <HomePage lang={lang} />
+</BaseLayout>

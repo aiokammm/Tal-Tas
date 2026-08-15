@@ -1,0 +1,190 @@
+---
+/**
+ * Бегунок «до / после» — главная фишка сайта.
+ *
+ * Тянешь полосу посередине фотографии, и пустая комната превращается
+ * в обставленную. Ни у одного из пяти разобранных конкурентов такого нет
+ * (см. docs/01-research.md).
+ *
+ * Как устроено. Две картинки лежат друг на друге. Верхняя («до») обрезается
+ * по ширине — сколько показать, задаёт переменная --pos.
+ *
+ * Почему поверх лежит невидимый <input type="range">, а не самодельный
+ * обработчик мыши: ползунок — это стандартный элемент, и браузер бесплатно
+ * даёт к нему управление стрелками с клавиатуры и правильное объявление
+ * для незрячих. Самодельный пришлось бы делать доступным вручную,
+ * и почти никто этого не делает.
+ */
+interface Props {
+  beforeLabel: string;
+  afterLabel: string;
+  /** Что зачитает программа для незрячих, когда дойдёт до бегунка */
+  hint: string;
+  caption?: string;
+}
+
+const { beforeLabel, afterLabel, hint, caption } = Astro.props;
+---
+
+<figure class="ba">
+  <div class="ba__frame">
+    <div class="ba__layer ba__layer--after">
+      <slot name="after" />
+    </div>
+
+    <div class="ba__layer ba__layer--before">
+      <slot name="before" />
+    </div>
+
+    <span class="ba__tag ba__tag--left">{beforeLabel}</span>
+    <span class="ba__tag ba__tag--right">{afterLabel}</span>
+
+    <div class="ba__divider" aria-hidden="true">
+      <span class="ba__grip"></span>
+    </div>
+
+    <input
+      class="ba__range"
+      type="range"
+      min="0"
+      max="100"
+      value="50"
+      step="1"
+      aria-label={hint}
+    />
+  </div>
+
+  {caption && <figcaption class="ba__caption">{caption}</figcaption>}
+</figure>
+
+<style>
+  .ba {
+    margin: 0;
+  }
+
+  .ba__frame {
+    /* Сколько процентов ширины занимает картинка «до».
+       Это значение меняет скрипт внизу файла. */
+    --pos: 50%;
+
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    /* Курсор-стрелки влево-вправо: подсказка, что тут можно тянуть */
+    cursor: ew-resize;
+    user-select: none;
+  }
+
+  /* Обводка появляется, когда до бегунка дошли клавишей Tab */
+  .ba__frame:has(.ba__range:focus-visible) {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  /* Два селектора подряд (.ba .ba__frame) — не опечатка. Так это правило
+     становится «сильнее» правила внутри Photo.astro и перекрывает его.
+     Здесь высота обязана быть 100%: слои лежат друг на друге, и если
+     верхний окажется другой высоты, шторка поедет. */
+  .ba .ba__frame .ba__layer > :global(*) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Нижний слой лежит в потоке и задаёт высоту всей рамке */
+  .ba__layer--after {
+    position: relative;
+  }
+
+  /* Верхний слой накрывает нижний и обрезается справа.
+     inset(сверху справа снизу слева) — обрезаем справа на остаток. */
+  .ba__layer--before {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+  }
+
+  .ba__tag {
+    position: absolute;
+    bottom: var(--space-3);
+    padding: var(--space-1) var(--space-3);
+    background-color: rgb(35 39 43 / 0.78);
+    color: var(--alabaster);
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: var(--radius);
+    /* Чтобы подписи не перехватывали мышь у бегунка */
+    pointer-events: none;
+  }
+
+  .ba__tag--left {
+    left: var(--space-3);
+  }
+
+  .ba__tag--right {
+    right: var(--space-3);
+  }
+
+  .ba__divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--pos);
+    width: 2px;
+    background-color: var(--white);
+    transform: translateX(-1px);
+    pointer-events: none;
+  }
+
+  /* Кружок посередине полосы — подсказка «меня можно тянуть» */
+  .ba__grip {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+    border: 2px solid var(--white);
+    border-radius: 50%;
+    background-color: rgb(35 39 43 / 0.35);
+    backdrop-filter: blur(2px);
+  }
+
+  /* Сам ползунок растянут на всю картинку и полностью прозрачен.
+     Видно только полосу и кружок выше, но тянет мышь именно его. */
+  .ba__range {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    appearance: none;
+    background: transparent;
+  }
+
+  .ba__caption {
+    margin-top: var(--space-3);
+    font-size: var(--text-xs);
+    color: var(--stone);
+  }
+</style>
+
+<script>
+  // Связываем невидимый ползунок с переменной --pos на рамке.
+  // querySelectorAll находит все бегунки на странице — их может быть несколько.
+  const frames = document.querySelectorAll<HTMLElement>(".ba__frame");
+
+  for (const frame of frames) {
+    const range = frame.querySelector<HTMLInputElement>(".ba__range");
+    if (!range) continue;
+
+    const update = () => frame.style.setProperty("--pos", `${range.value}%`);
+
+    // "input" срабатывает во время перетаскивания, а не только после отпускания
+    range.addEventListener("input", update);
+    update();
+  }
+</script>

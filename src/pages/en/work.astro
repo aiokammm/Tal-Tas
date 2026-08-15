@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import WorkPage from "../../components/pages/WorkPage.astro";
+import { getPages } from "../../i18n/utils";
+
+const lang = "en" as const;
+const t = getPages(lang);
+---
+
+<BaseLayout lang={lang} title={t.work.title} description={t.work.intro}>
+  <WorkPage lang={lang} />
+</BaseLayout>

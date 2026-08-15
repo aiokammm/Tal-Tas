@@ -1,0 +1,143 @@
+---
+/**
+ * Общая обёртка для всех страниц сайта, на любом языке.
+ */
+import "../styles/global.css";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { site } from "../data/site";
+import StructuredData from "../components/StructuredData.astro";
+import { getContent, languageLinks, languages, type Lang } from "../i18n/utils";
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+  /** Разметка «вопрос — ответ» для поисковика. Нужна только на странице услуг. */
+  withFaq?: boolean;
+  /**
+   * Картинки первого экрана — попросим браузер начать качать их сразу,
+   * не дожидаясь, пока он дочитает всю страницу и дойдёт до тега <img>.
+   * На главной это самая большая картинка, и разница видна невооружённым глазом.
+   * Пути относительно папки photos, например "work/alatau-2k-after.webp".
+   */
+  preloadPhotos?: string[];
+}
+
+const {
+  lang,
+  title,
+  description,
+  withFaq = false,
+  preloadPhotos = [],
+} = Astro.props;
+const t = getContent(lang);
+const alternates = languageLinks(Astro.url.pathname, lang);
+
+/* Канонический адрес — «главный» адрес этой страницы.
+   Нужен, чтобы поисковик не счёл /quote и /quote/?utm_source=... разными
+   страницами и не размазал их вес между собой. */
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
+const ogImage = new URL("/og-image.png", Astro.site ?? Astro.url).href;
+---
+
+<!doctype html>
+<html lang={languages[lang].htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{title} | {site.fullName}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Говорим поисковикам и браузеру, что у этой страницы есть версия
+         на другом языке. Без этого Google считает их разными страницами,
+         а браузер предлагает автоперевод вместо готового перевода. -->
+    {
+      alternates.map((item) => (
+        <link rel="alternate" hreflang={item.htmlLang} href={item.href} />
+      ))
+    }
+
+    <!-- Как ссылка выглядит, когда её кидают в WhatsApp, Telegram или соцсеть.
+         Без картинки ссылка выглядит блёкло, и по ней реже переходят. -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={site.fullName} />
+    <meta property="og:locale" content={lang === "ru" ? "ru_RU" : "en_US"} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {
+      preloadPhotos.map((file) => (
+        <link
+          rel="preload"
+          as="image"
+          type="image/webp"
+          href={`/photos/${file}`}
+          fetchpriority="high"
+        />
+      ))
+    }
+
+    <StructuredData lang={lang} withFaq={withFaq} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Просим браузер начать качать шрифты сразу, не дожидаясь, пока он
+         дочитает файл стилей. Заранее просим только тот алфавит, которым
+         набрана эта страница: на казахской нет смысла тянуть латиницу. -->
+    {
+      (lang === "en"
+        ? ["literata-latin", "inter-latin"]
+        : ["literata-cyrillic", "inter-cyrillic"]
+      ).map((file) => (
+        <link
+          rel="preload"
+          href={`/fonts/${file}.woff2`}
+          as="font"
+          type="font/woff2"
+          crossorigin
+        />
+      ))
+    }
+  </head>
+
+  <body>
+    <!-- Первая ссылка на странице, видна только при переходе клавишей Tab.
+         Позволяет с клавиатуры перепрыгнуть меню и попасть сразу
+         к содержимому, а не прощёлкивать шапку на каждой странице. -->
+    <a class="skip" href="#main">{t.labels.skipLink}</a>
+
+    <SiteHeader lang={lang} />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <SiteFooter lang={lang} />
+
+    <style>
+      .skip {
+        position: absolute;
+        left: var(--space-4);
+        top: calc(-1 * var(--space-16));
+        z-index: 10;
+        padding: var(--space-3) var(--space-4);
+        background-color: var(--ink);
+        color: var(--alabaster);
+        text-decoration: none;
+        transition: top var(--transition);
+      }
+
+      .skip:focus {
+        top: var(--space-4);
+      }
+    </style>
+  </body>
+</html>

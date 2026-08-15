@@ -1,0 +1,12 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ContactPage from "../components/pages/ContactPage.astro";
+import { getPages } from "../i18n/utils";
+
+const lang = "ru" as const;
+const t = getPages(lang);
+---
+
+<BaseLayout lang={lang} title={t.contact.title} description={t.contact.intro}>
+  <ContactPage lang={lang} />
+</BaseLayout>

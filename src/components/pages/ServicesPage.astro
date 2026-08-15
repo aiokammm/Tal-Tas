@@ -1,0 +1,216 @@
+---
+import PageHeader from "../PageHeader.astro";
+import FinalCta from "../FinalCta.astro";
+import { getPages, type Lang } from "../../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getPages(lang);
+---
+
+<PageHeader title={t.services.title} intro={t.services.intro} />
+
+<section class="section">
+  <div class="container">
+    <div class="svc">
+      {
+        t.services.items.map((item) => (
+          <article class="svc__item" id={item.slug}>
+            <div class="svc__head">
+              <h2 class="svc__name">{item.name}</h2>
+              <p class="svc__price">{item.price}</p>
+            </div>
+
+            <div class="svc__body">
+              <p class="svc__desc">{item.description}</p>
+
+              <p class="svc__meta">
+                <span class="svc__metaLabel">{t.services.durationLabel}</span>
+                {item.duration}
+              </p>
+
+              <p class="svc__metaLabel svc__includesLabel">
+                {t.services.includesLabel}
+              </p>
+              <ul class="svc__list">
+                {item.includes.map((line) => (
+                  <li class="svc__listItem">{line}</li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    <p class="svc__note">{t.services.priceNote}</p>
+  </div>
+</section>
+
+<!-- ===================== Частые вопросы =====================
+     Сделаны на <details> — это встроенный в браузер раскрывающийся блок.
+     Своего кода не нужно вообще, и он сразу правильно работает
+     с клавиатурой и с программами для незрячих. -->
+<section class="section faq">
+  <div class="container">
+    <h2 class="faq__title">{t.services.faqTitle}</h2>
+
+    <div class="faq__list">
+      {
+        t.services.faq.map((item) => (
+          <details class="faq__item">
+            <summary class="faq__q">{item.q}</summary>
+            <p class="faq__a">{item.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<FinalCta lang={lang} page="services" />
+
+<style>
+  /* --- Услуги --- */
+  .svc {
+    display: grid;
+    gap: var(--space-16);
+  }
+
+  .svc__item {
+    display: grid;
+    gap: var(--space-6);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--line);
+  }
+
+  .svc__name {
+    max-width: 16ch;
+  }
+
+  .svc__price {
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
+    color: var(--clay);
+  }
+
+  .svc__desc {
+    max-width: 62ch;
+  }
+
+  .svc__meta {
+    margin-top: var(--space-6);
+    font-size: var(--text-sm);
+    color: var(--stone);
+  }
+
+  .svc__metaLabel {
+    display: block;
+    font-size: var(--text-xs);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--stone);
+    margin-bottom: var(--space-2);
+  }
+
+  .svc__includesLabel {
+    margin-top: var(--space-6);
+  }
+
+  .svc__list {
+    list-style: none;
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .svc__listItem {
+    position: relative;
+    padding-left: var(--space-6);
+    font-size: var(--text-sm);
+  }
+
+  /* Галочка нарисована в CSS, а не картинкой: не надо ничего загружать */
+  .svc__listItem::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 10px;
+    height: 5px;
+    border-left: 1.5px solid var(--willow);
+    border-bottom: 1.5px solid var(--willow);
+    transform: rotate(-45deg);
+  }
+
+  .svc__note {
+    max-width: var(--text-width);
+    margin-top: var(--space-16);
+    padding: var(--space-6);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    color: var(--stone);
+  }
+
+  @media (min-width: 900px) {
+    .svc__item {
+      grid-template-columns: 1fr 1.6fr;
+      gap: var(--space-12);
+    }
+  }
+
+  /* --- Частые вопросы --- */
+  .faq {
+    border-top: 1px solid var(--line);
+  }
+
+  .faq__title {
+    margin-bottom: var(--space-12);
+  }
+
+  .faq__list {
+    max-width: var(--text-width);
+  }
+
+  .faq__item {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .faq__q {
+    padding-block: var(--space-6);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    cursor: pointer;
+    list-style: none; /* убираем стандартный треугольник */
+    position: relative;
+    padding-right: var(--space-8);
+  }
+
+  .faq__q::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Свой плюс, который превращается в минус при раскрытии */
+  .faq__q::after {
+    content: "+";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--text-xl);
+    color: var(--stone);
+  }
+
+  .faq__item[open] .faq__q::after {
+    content: "−";
+  }
+
+  .faq__a {
+    padding-bottom: var(--space-6);
+    color: var(--stone);
+    max-width: 62ch;
+  }
+</style>

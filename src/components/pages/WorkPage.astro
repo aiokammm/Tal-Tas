@@ -1,0 +1,207 @@
+---
+import PageHeader from "../PageHeader.astro";
+import FinalCta from "../FinalCta.astro";
+import BeforeAfter from "../BeforeAfter.astro";
+import Photo from "../Photo.astro";
+import { getContent, getPages, type Lang } from "../../i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = getPages(lang);
+const common = getContent(lang);
+
+/* Собираем список типов для кнопок фильтра прямо из проектов.
+   Set убирает повторы: «Пустая квартира» встречается трижды,
+   а кнопка нужна одна. */
+const types = [...new Set(t.work.items.map((item) => item.type))];
+---
+
+<PageHeader title={t.work.title} intro={t.work.intro} />
+
+<section class="section">
+  <div class="container">
+    <!-- Фильтр. Это настоящие кнопки, а не ссылки: страница не
+         перезагружается, меняется только то, что показано. -->
+    <div class="filter" role="group" aria-label={t.work.filterLabel}>
+      <button class="filter__btn" type="button" data-filter="*" aria-pressed="true">
+        {t.work.filterAll}
+      </button>
+      {
+        types.map((type) => (
+          <button
+            class="filter__btn"
+            type="button"
+            data-filter={type}
+            aria-pressed="false"
+          >
+            {type}
+          </button>
+        ))
+      }
+    </div>
+
+    <ul class="grid" id="work-grid">
+      {
+        t.work.items.map((item) => (
+          <li class="grid__item" data-type={item.type}>
+            <BeforeAfter
+              beforeLabel={common.labels.before}
+              afterLabel={common.labels.after}
+              hint={common.labels.sliderHint}
+            >
+              <Photo
+                slot="before"
+                src={`work/${item.slug}-before.webp`}
+                alt={`${common.labels.photoBefore}: ${item.room}, ${item.title}`}
+                placeholder={`${common.labels.photoBefore}: ${item.room}, 3:2`}
+                tone="dark"
+              />
+              <Photo
+                slot="after"
+                src={`work/${item.slug}-after.webp`}
+                alt={`${common.labels.photoAfter}: ${item.room}, ${item.title}`}
+                placeholder={`${common.labels.photoAfter}: ${item.room}, 3:2`}
+              />
+            </BeforeAfter>
+
+            <h2 class="grid__title">{item.title}</h2>
+
+            <dl class="grid__meta">
+              <div class="grid__row">
+                <dt>{item.type}</dt>
+                <dd>{item.room}</dd>
+              </div>
+              <div class="grid__row">
+                <dt>{t.work.areaLabel}</dt>
+                <dd>{item.area}</dd>
+              </div>
+              <div class="grid__row">
+                <dt>{t.work.resultLabel}</dt>
+                <dd>{item.result}</dd>
+              </div>
+            </dl>
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- Сообщение на случай, если под фильтр ничего не подошло.
+         Пустой экран без объяснения выглядит как поломка. -->
+    <p class="grid__empty" hidden>—</p>
+  </div>
+</section>
+
+<FinalCta lang={lang} page="work" />
+
+<style>
+  /* --- Фильтр --- */
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-12);
+  }
+
+  .filter__btn {
+    min-height: 44px;
+    padding-inline: var(--space-4);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    color: var(--stone);
+    cursor: pointer;
+    transition: color var(--transition), border-color var(--transition),
+      background-color var(--transition);
+  }
+
+  .filter__btn:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  /* Нажатая кнопка отличается и цветом, и фоном — не только цветом,
+     иначе человек, не различающий цвета, не поймёт, что выбрано. */
+  .filter__btn[aria-pressed="true"] {
+    background-color: var(--ink);
+    border-color: var(--ink);
+    color: var(--alabaster);
+  }
+
+  /* --- Сетка работ --- */
+  .grid {
+    list-style: none;
+    display: grid;
+    gap: var(--space-16);
+  }
+
+  .grid__item[hidden] {
+    display: none;
+  }
+
+  .grid__title {
+    margin-top: var(--space-6);
+    font-size: var(--text-lg);
+  }
+
+  .grid__meta {
+    margin-top: var(--space-4);
+    display: grid;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  .grid__row {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: var(--space-3);
+  }
+
+  .grid__row dt {
+    color: var(--stone);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding-top: 0.25em;
+  }
+
+  .grid__empty {
+    color: var(--stone);
+  }
+
+  @media (min-width: 768px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-16) var(--space-8);
+    }
+  }
+</style>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>(".filter__btn");
+  const items = document.querySelectorAll<HTMLElement>(".grid__item");
+  const empty = document.querySelector<HTMLElement>(".grid__empty");
+
+  for (const button of buttons) {
+    button.addEventListener("click", () => {
+      const wanted = button.dataset.filter;
+
+      // Подсвечиваем нажатую кнопку и гасим остальные
+      for (const other of buttons) {
+        other.setAttribute("aria-pressed", String(other === button));
+      }
+
+      let shown = 0;
+      for (const item of items) {
+        const match = wanted === "*" || item.dataset.type === wanted;
+        item.hidden = !match;
+        if (match) shown += 1;
+      }
+
+      if (empty) empty.hidden = shown > 0;
+    });
+  }
+</script>

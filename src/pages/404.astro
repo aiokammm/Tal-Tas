@@ -1,0 +1,70 @@
+---
+/**
+ * Страница, которую видят при опечатке в адресе.
+ *
+ * Без неё человек упирается в голое сообщение браузера, где нет ни шапки,
+ * ни ссылки обратно — и уходит с сайта совсем. Это самая дешёвая и самая
+ * часто забываемая страница на любом сайте.
+ *
+ * Она одна на весь сайт: когда адрес неправильный, определить язык
+ * посетителя неоткуда. Поэтому текст даём на обоих языках сразу.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getContent, localize } from "../i18n/utils";
+
+const ru = getContent("ru");
+const en = getContent("en");
+---
+
+<BaseLayout lang="ru" title={ru.notFound.title} description={ru.notFound.body}>
+  <section class="section nf">
+    <div class="container prose">
+      <p class="nf__code" aria-hidden="true">404</p>
+
+      <h1>{ru.notFound.title}</h1>
+      <p class="nf__body">{ru.notFound.body}</p>
+      <a class="btn btn--primary nf__btn" href={localize("/", "ru")}>
+        {ru.notFound.button}
+      </a>
+
+      <hr class="nf__line" />
+
+      <div lang="en">
+        <h2 class="nf__enTitle">{en.notFound.title}</h2>
+        <p class="nf__body">{en.notFound.body}</p>
+        <a class="btn btn--ghost nf__btn" href={localize("/", "en")}>
+          {en.notFound.button}
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf__code {
+    font-family: var(--font-display);
+    font-size: var(--text-4xl);
+    color: var(--line);
+    line-height: 1;
+    margin-bottom: var(--space-6);
+  }
+
+  .nf__body {
+    margin-top: var(--space-4);
+    color: var(--stone);
+  }
+
+  .nf__btn {
+    margin-top: var(--space-8);
+  }
+
+  .nf__line {
+    margin-block: var(--space-16);
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .nf__enTitle {
+    font-size: var(--text-2xl);
+  }
+</style>

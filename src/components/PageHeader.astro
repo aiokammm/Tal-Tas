@@ -1,0 +1,31 @@
+---
+/** Одинаковая шапка для всех внутренних страниц: заголовок и вводный абзац. */
+interface Props {
+  title: string;
+  intro?: string;
+}
+
+const { title, intro } = Astro.props;
+---
+
+<section class="ph section">
+  <div class="container">
+    <h1 class="ph__title">{title}</h1>
+    {intro && <p class="lead ph__intro">{intro}</p>}
+  </div>
+</section>
+
+<style>
+  .ph {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ph__title {
+    max-width: 20ch;
+  }
+
+  .ph__intro {
+    margin-top: var(--space-6);
+    max-width: 58ch;
+  }
+</style>
